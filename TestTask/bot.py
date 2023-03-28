@@ -43,7 +43,7 @@ async def main(message: types.Message):
     if message.text == 'Реєстрація':
         await bot.send_message(message.from_user.id, 'Почнемо реєстрацію!', reply_markup=hide_keyboard)
         await FSMRegistration.username.set()
-        await bot.send_message(message.from_user.id, 'Имя пользователя:')
+        await bot.send_message(message.from_user.id, "Ім'я користувача:")
 
 
 @dp.message_handler(state=FSMRegistration.username)
@@ -51,7 +51,7 @@ async def username(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['username'] = message.text
     await FSMRegistration.email.set()
-    await bot.send_message(message.from_user.id, 'Почта:')
+    await bot.send_message(message.from_user.id, 'Пошта:')
 
 
 @dp.message_handler(state=FSMRegistration.email)
@@ -61,9 +61,9 @@ async def username(message: types.Message, state: FSMContext):
     is_valid = validate_email(data['email'])
     if is_valid == True:
         await FSMRegistration.password1.set()
-        await bot.send_message(message.from_user.id, 'Пароль:\n(Должно быть не менее 8 символов!)')
+        await bot.send_message(message.from_user.id, 'Пароль:\n(Має бути не менше 8 символів!)')
     else:
-        await bot.send_message(message.from_user.id, 'Почта введена не коректно!\nПовторите попытку:')
+        await bot.send_message(message.from_user.id, 'Пошту введено неправильно!\nПовторіть спробу:')
         await FSMRegistration.email.set()
 
 
@@ -72,11 +72,11 @@ async def username(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['password1'] = message.text
     if len(data['password1']) < 8:
-        await bot.send_message(message.from_user.id, 'Пароль должен содержать не менее 8 символов!\nПовторите попытку:')
+        await bot.send_message(message.from_user.id, 'Пароль повинен містити щонайменше 8 символів!\nПовторіть спробу:')
         await FSMRegistration.password1.set()
     else:
         await FSMRegistration.password2.set()
-        await bot.send_message(message.from_user.id, 'Повторите пароль:')
+        await bot.send_message(message.from_user.id, 'Повторіть пароль:')
 
 
 User = get_user_model()
@@ -87,14 +87,12 @@ async def username(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['password2'] = message.text
     if data['password1'] == data['password2']:
-        await bot.send_message(message.from_user.id, 'Вы успешно зарегистрировались!\nПерейдите на сайт и войдите в свой аккаунт:', reply_markup=inline_kb_full)
-        user = await sync_to_async(User.objects.create_user)(
-            username=data['username'], email=data['email'], password=data['password1']
-        )
+        await bot.send_message(message.from_user.id, 'Ви успішно зареєструвалися!\nПерейдіть на сайт і увійдіть до свого облікового запису:', reply_markup=inline_kb_full)
+        user = await sync_to_async(User.objects.create_user)(username=data['username'], email=data['email'], password=data['password1'])
         await sync_to_async(user.save)()
         await state.finish()
     else:
-        await bot.send_message(message.from_user.id, 'Пароли должны совпадать!\nПовторите попытку:')
+        await bot.send_message(message.from_user.id, 'Паролі повинні збігатися!\nПовторіть спробу:')
         await FSMRegistration.password2.set()
 
 if __name__ == '__main__':
