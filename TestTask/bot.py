@@ -24,7 +24,7 @@ dp = Dispatcher(bot, storage=storage)
 hide_keyboard = ReplyKeyboardRemove()
 markup0 = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
 markup0.add('Реєстрація')
-button_link_on_site = InlineKeyboardButton(text='Перейти на сайт', url='http://127.0.0.1:8000/')
+button_link_on_site = InlineKeyboardButton(text='Перейти на сайт', url='http://127.0.0.1:8000/login/')
 inline_kb_full = InlineKeyboardMarkup(row_width=1).add(button_link_on_site)
 
 
