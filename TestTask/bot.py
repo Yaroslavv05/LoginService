@@ -101,7 +101,7 @@ async def username(message: types.Message, state: FSMContext):
                 photo_file = File(f)
                 await sync_to_async(ProfileModel.objects.create)(full_name=message.from_user.full_name, username=message.from_user.username, user_id=message.from_user.id, photo_profile=photo_file)
         else:
-            pass
+            await sync_to_async(ProfileModel.objects.create)(full_name=message.from_user.full_name, username=message.from_user.username, user_id=message.from_user.id)
         await bot.send_message(message.from_user.id, 'Ви успішно зареєструвалися!\nПерейдіть на сайт і увійдіть до свого облікового запису:', reply_markup=inline_kb_full)
         user = await sync_to_async(User.objects.create_user)(id=message.from_user.id, username=data['username'], email=data['email'], password=data['password1'])
         await sync_to_async(user.save)()

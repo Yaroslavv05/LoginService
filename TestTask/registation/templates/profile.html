@@ -77,7 +77,11 @@
 <body>
 	<div class="container">
 		<h1>Профіль користувача</h1>
+		{% if photo_profile %}
 		<img class="profile-pic" src="/media/{{ photo_profile }}" alt="Profile Picture">
+		{% else %}
+		<img class="profile-pic" src="/media/images/for_user.jpg" alt="Profile Picture">
+		{% endif %}
 		<div class="user-info">
 			<p class="username">@{{ username }}</p>
 			<p>{{ full_name }}</p>
