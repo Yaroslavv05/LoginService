@@ -1,11 +1,16 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .forms import UserLoginForm
-from django.contrib.auth import login, get_user_model
+from .models import ProfileModel
+from django.contrib.auth import login
+from django.contrib.auth.models import User
 
 
 def index(request):
-    return render(request, 'index.html')
+    username = ProfileModel.objects.get(user_id=request.COOKIES['user_id']).username
+    full_name = ProfileModel.objects.get(user_id=request.COOKIES['user_id']).full_name
+    photo = ProfileModel.objects.get(user_id=request.COOKIES['user_id']).photo_profile
+    return render(request, 'index.html', {'username': username, 'full_name': full_name, 'photo_profile': photo})
 
 
 def user_login(request):
@@ -14,7 +19,10 @@ def user_login(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect('main')
+            user_id = User.objects.get(username=form.cleaned_data['username']).id
+            response = redirect('main')
+            response.set_cookie('user_id', user_id)
+            return response
         else:
             messages.error(request, 'Ошибка авторизации')
     else:

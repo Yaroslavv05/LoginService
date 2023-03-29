@@ -6,6 +6,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from validate_email import validate_email
 from django.contrib.auth import get_user_model
 from asgiref.sync import sync_to_async
+from django.core.files import File
 import logging
 import os
 import django
@@ -14,6 +15,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'TestTask.settings')
 django.setup()
 
 from django.contrib.auth.models import User
+from registation.models import ProfileModel
 logging.basicConfig(level=logging.INFO)
 storage = MemoryStorage()
 TOKEN = '5875851778:AAF_Gfrs5vv83JbErvBOYXDSGNHj6YAUOr8'
@@ -44,6 +46,8 @@ async def main(message: types.Message):
         await bot.send_message(message.from_user.id, 'Почнемо реєстрацію!', reply_markup=hide_keyboard)
         await FSMRegistration.username.set()
         await bot.send_message(message.from_user.id, "Ім'я користувача:")
+    else:
+        await bot.send_message(message.from_user.id, f'Привіт {message.from_user.full_name}, я бот для реєстрації!', reply_markup=markup0)
 
 
 @dp.message_handler(state=FSMRegistration.username)
@@ -87,8 +91,19 @@ async def username(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['password2'] = message.text
     if data['password1'] == data['password2']:
+        user_profile_photos = await bot.get_user_profile_photos(user_id=message.from_user.id, limit=1)
+        if user_profile_photos.photos:
+            photo_id = user_profile_photos.photos[0][-1].file_id
+            photo_file = await bot.download_file_by_id(file_id=photo_id)
+            with open('example.jpg', 'wb') as f:
+                f.write(photo_file.read())
+            with open('example.jpg', 'rb') as f:
+                photo_file = File(f)
+                await sync_to_async(ProfileModel.objects.create)(full_name=message.from_user.full_name, username=message.from_user.username, user_id=message.from_user.id, photo_profile=photo_file)
+        else:
+            pass
         await bot.send_message(message.from_user.id, 'Ви успішно зареєструвалися!\nПерейдіть на сайт і увійдіть до свого облікового запису:', reply_markup=inline_kb_full)
-        user = await sync_to_async(User.objects.create_user)(username=data['username'], email=data['email'], password=data['password1'])
+        user = await sync_to_async(User.objects.create_user)(id=message.from_user.id, username=data['username'], email=data['email'], password=data['password1'])
         await sync_to_async(user.save)()
         await state.finish()
     else:
